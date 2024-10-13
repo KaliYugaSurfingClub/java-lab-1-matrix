@@ -5,7 +5,7 @@ public class Complex {
     private double imaginary;
     private static final double EPSILON = 1e-10;
     //так как при сравнении чисел с плавающей точкой могут возникать неточности,
-    // считаем числа равными при неточности EPSILON
+    // считаем числа равными при неточности EPSILON //конечно этой переменной не место в классе она должна куда то, как то передаваться через конфиг
 
     public Complex(double real, double imaginary) {
         this.real = real;

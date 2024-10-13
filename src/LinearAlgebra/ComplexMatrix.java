@@ -1,33 +1,37 @@
+package LinearAlgebra;
+
 import java.util.Arrays;
 
-class ComplexMatrix {
+public class ComplexMatrix {
     private final Complex[][] matrix;
 
     ComplexMatrix(int rows, int cols) {
+        if (rows <= 0 || cols <= 0) {
+            throw new IllegalArgumentException("Matrix dimensions must be positive");
+        }
+
         matrix = new Complex[rows][cols];
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                matrix[i][j] = new Complex(0, 0);
+                matrix[i][j] = new Complex(0, 0); // Initialize with 0+0i
             }
         }
     }
 
-    ComplexMatrix(Complex[][] matrix) {
+    public ComplexMatrix(Complex[][] matrix) {
         this.matrix = matrix;
     }
 
-    int getRowsCount() {
+    public int getRowsCount() {
         return matrix.length;
     }
 
-    int getColumnsCount() {
+    public int getColumnsCount() {
         return matrix[0].length;
     }
 
-    ComplexMatrix add(ComplexMatrix other) {
-        if (getColumnsCount() != other.getColumnsCount() || getRowsCount() != other.getRowsCount()) {
-            throw new ArithmeticException();
-        }
+    public ComplexMatrix add(ComplexMatrix other) {
+        checkDimensions(other);
 
         ComplexMatrix result = new ComplexMatrix(getRowsCount(), getColumnsCount());
 
@@ -40,25 +44,36 @@ class ComplexMatrix {
         return result;
     }
 
-    ComplexMatrix subtract(ComplexMatrix other) {
-        return add(other.multiply(-1));
-    }
+    public ComplexMatrix subtract(ComplexMatrix other) {
+        checkDimensions(other);
 
-    ComplexMatrix multiply(int num) {
         ComplexMatrix result = new ComplexMatrix(getRowsCount(), getColumnsCount());
 
         for (int i = 0; i < getRowsCount(); i++) {
             for (int j = 0; j < getColumnsCount(); j++) {
-                result.matrix[i][j] = this.matrix[i][j].multiply(num);
+                result.matrix[i][j] = this.matrix[i][j].subtract(other.matrix[i][j]);
             }
         }
 
         return result;
     }
 
-    ComplexMatrix multiply(ComplexMatrix other) {
+    public ComplexMatrix multiply(double scalar) {
+
+        ComplexMatrix result = new ComplexMatrix(getRowsCount(), getColumnsCount());
+
+        for (int i = 0; i < getRowsCount(); i++) {
+            for (int j = 0; j < getColumnsCount(); j++) {
+                result.matrix[i][j] = this.matrix[i][j].multiply(scalar);
+            }
+        }
+
+        return result;
+    }
+
+    public ComplexMatrix multiply(ComplexMatrix other) {
         if (getColumnsCount() != other.getRowsCount()) {
-            throw new ArithmeticException("Invalid matrix dimensions for multiplication");
+            throw new ArithmeticException("Matrix multiplication not possible, invalid dimensions");
         }
 
         ComplexMatrix result = new ComplexMatrix(getRowsCount(), other.getColumnsCount());
@@ -66,8 +81,7 @@ class ComplexMatrix {
         for (int i = 0; i < getRowsCount(); i++) {
             for (int j = 0; j < other.getColumnsCount(); j++) {
                 Complex sum = new Complex(0, 0);
-
-                for (int k = 0; k < getColumnsCount(); k++) {  // здесь должно быть getColumnsCount() первой матрицы
+                for (int k = 0; k < getColumnsCount(); k++) {
                     sum = sum.add(this.matrix[i][k].multiply(other.matrix[k][j]));
                 }
                 result.matrix[i][j] = sum;
@@ -77,7 +91,7 @@ class ComplexMatrix {
         return result;
     }
 
-    ComplexMatrix transpose() {
+    public ComplexMatrix transpose() {
         ComplexMatrix result = new ComplexMatrix(getColumnsCount(), getRowsCount());
 
         for (int i = 0; i < getRowsCount(); i++) {
@@ -89,9 +103,9 @@ class ComplexMatrix {
         return result;
     }
 
-    Complex determinant() {
+    public Complex determinant() {
         if (getRowsCount() != getColumnsCount()) {
-            throw new ArithmeticException("Matrix must be square to calculate determinant");
+            throw new ArithmeticException("Matrix must be square to compute determinant");
         }
 
         if (getRowsCount() == 1) return matrix[0][0];
@@ -110,11 +124,13 @@ class ComplexMatrix {
 
         for (int i = 0, p = 0; i < getRowsCount(); i++) {
             if (i == row) continue;
+
             for (int j = 0, q = 0; j < getColumnsCount(); j++) {
                 if (j == col) continue;
                 minorMatrix[p][q] = matrix[i][j];
                 q++;
             }
+
             p++;
         }
 
@@ -122,6 +138,12 @@ class ComplexMatrix {
         Complex sign = ((row + col) % 2 == 0) ? new Complex(1, 0) : new Complex(-1, 0);
 
         return sign.multiply(minor.determinant());
+    }
+
+    private void checkDimensions(ComplexMatrix other) {
+        if (this.getRowsCount() != other.getRowsCount() || this.getColumnsCount() != other.getColumnsCount()) {
+            throw new ArithmeticException("Matrices must have the same dimensions");
+        }
     }
 
     @Override
